@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "..\\.."
+		},
+		{
+			"path": "..\\..\\..\\vuetify_crud_api_laravel"
+		}
+	],
+	"settings": {
+		"liveServer.settings.multiRootWorkspaceName": "vuetify_crud_api_laravel"
+	}
+}

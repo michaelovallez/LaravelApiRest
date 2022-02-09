@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ProductoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,7 +18,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
-Route::get('/productos','App\Http\Controllers\ProductoController@index'); //mostrar todos los registros
-Route::post('/productos','App\Http\Controllers\ProductoController@store'); //crear un registro
-Route::put('/productos\{id}','App\Http\Controllers\ProductoController@update'); //actualizar un registro
-Route::delete('/productos\{id}','App\Http\Controllers\ProductoController@destroy'); //actualizar un registro
+Route::get('/productos',[ProductoController::class,'index']); //mostrar todos los registros
+Route::post('/productos',[ProductoController::class,'store']); //crear un registro
+Route::put('/productos/{id}',[ProductoController::class,'update']); //actualizar un registro
+Route::delete('/productos/{id}',[ProductoController::class,'destroy']); //actualizar un registro

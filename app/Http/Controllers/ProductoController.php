@@ -91,7 +91,7 @@ class ProductoController extends Controller
         $producto->stock = $request->stock;
 
         $producto->save();
-        return producto;
+        return $producto;
     }
 
     /**
