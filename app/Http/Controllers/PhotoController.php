@@ -1,10 +1,13 @@
 <?php
 
 namespace App\Http\Controllers;
+ini_set('max_execution_time', 1800);
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Arr;
+use App\Models\Photo;
+use Illuminate\Support\Facades\DB;
 
 class PhotoController extends Controller
 {
@@ -15,15 +18,7 @@ class PhotoController extends Controller
      */
     public function index()
     {
-        $response = Http::get('https://jsonplaceholder.typicode.com/photos');
-        if ($response->status()==200)
-        {
-            $arreglo = $response->json();
-
-            $isAccessible = Arr::accessible($arreglo);
-            
-            return count($arreglo);
-        }
+        
     }
 
     /**
@@ -33,7 +28,33 @@ class PhotoController extends Controller
      */
     public function create()
     {
-        //
+        $response = Http::retry(3, 100, function ($exception) {
+            return $exception instanceof ConnectionException;
+        })->get('https://jsonplaceholder.typicode.com/photos');
+        if ($response->status()==200)
+        {
+            $photos = $response->json();
+            
+
+            $isAccessible = Arr::accessible($photos);
+            foreach ($photos as $photo)
+            {
+                DB::table('photos')->insert([
+                    'albumId' => $photo["albumId"],
+                    'title' => $photo["title"],
+                    'url' => $photo["url"],
+                    'thumbnailUrl' => $photo["thumbnailUrl"]
+                ]);
+            }
+            
+            try {
+                $photos = DB::table('photos')->paginate(2); //Producto::all()->paginate(2);
+                
+            } catch (ModelNotFoundException $exception) {
+                return back()->withError($exception->getMessage())->withInput();
+            }
+            return response()->json($photos,status:200);
+        }
     }
 
     /**
