@@ -3,7 +3,11 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+
+use App\Http\Requests\ProductoRequest;
 use App\Models\Producto;
+use Illuminate\Support\Facades\DB;
+
 
 class ProductoController extends Controller
 {
@@ -14,8 +18,13 @@ class ProductoController extends Controller
      */
     public function index()
     {
-        $productos = Producto::all();
-        return $productos;
+        try {
+            $productos = DB::table('productos')->paginate(2); //Producto::all()->paginate(2);
+            
+        } catch (ModelNotFoundException $exception) {
+            return back()->withError($exception->getMessage())->withInput();
+        }
+        return response()->json($productos,status:200);
     }
 
     /**
@@ -34,19 +43,14 @@ class ProductoController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
-    {
-        $producto = new Producto();
-        $producto->name = $request->name;
-        $producto->description = $request->description;
-        $producto->image = $request->image;
-        $producto->brand = $request->brand;
-        $producto->price = $request->price;
-        $producto->price_sale = $request->price_sale;
-        $producto->category = $request->category;
-        $producto->stock = $request->stock;
-
-        $producto->save();
+    public function store(ProductoRequest $request)
+    {   
+        Producto::create($request->all());
+    
+        return response()->json([
+            'res'=>true,
+        'msg'=> 'Producto Cargado Correctamente'
+    ]);
     }
 
     /**
@@ -55,9 +59,17 @@ class ProductoController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show($name)
     {
-        //
+
+        try {
+            $productos = DB::table('productos')->where('name', $name)->paginate(6); //Producto::all()->paginate(2);
+            
+        } catch (ModelNotFoundException $exception) {
+            return back()->withError($exception->getMessage())->withInput();
+        }
+        return response()->json($productos,status:200);
+            
     }
 
     /**
@@ -79,7 +91,8 @@ class ProductoController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request)
-    {
+    {   
+        try {
         $producto = Producto::findOrFail($request->id);
         $producto->name = $request->name;
         $producto->description = $request->description;
@@ -89,9 +102,12 @@ class ProductoController extends Controller
         $producto->price_sale = $request->price_sale;
         $producto->category = $request->category;
         $producto->stock = $request->stock;
-
         $producto->save();
-        return $producto;
+    } 
+        catch (ModelNotFoundException $exception) {
+            return back()->withError($exception->getMessage())->withInput();
+    }
+        return response()->json($producto,status:201);
     }
 
     /**
@@ -103,6 +119,6 @@ class ProductoController extends Controller
     public function destroy(request $request)
     {
         $producto = Producto::destroy($request->id);
-        return $producto;
+        return response()->json($productos,status:204);
     }
 }
