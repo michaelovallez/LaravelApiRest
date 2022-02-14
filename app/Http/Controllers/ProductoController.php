@@ -16,10 +16,16 @@ class ProductoController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+     
+     
     public function index()
     {
+        /**
+      * Metodo index devuelve por metodo GET contenido de la tabla PRODUCTOS, con paginacion de 2 elementos
+      * retornando los resultados de la busqueda, y status de conexion.
+      */
         try {
-            $productos = DB::table('productos')->paginate(2); //Producto::all()->paginate(2);
+            $productos = DB::table('productos')->paginate(2); 
             
         } catch (ModelNotFoundException $exception) {
             return back()->withError($exception->getMessage())->withInput();
@@ -45,12 +51,25 @@ class ProductoController extends Controller
      */
     public function store(ProductoRequest $request)
     {   
+        /**
+         * Metodo store carga nuevos elementos en la tabla producto, recibiendo parametros por POST.
+         * Utiliza las reglas definidas en el archivo ProductoRequest, que permite devolver un mensaje
+         * indicando el error producido al intentar insertar datos que no correspondan
+         * Devuelve un mensaje con el resultado de la carga y la respuesta.
+         * status http indicando correcta conexion y que se creo un nuevo recurso.
+         */
+        try {
         Producto::create($request->all());
     
         return response()->json([
             'res'=>true,
-        'msg'=> 'Producto Cargado Correctamente'
-    ]);
+            'msg'=> 'Producto Cargado Correctamente',
+            'status'=> 201
+
+        ],status:201);
+        } catch (ModelNotFoundException $exception) {
+            return back()->withError($exception->getMessage())->withInput();
+        }
     }
 
     /**
@@ -61,14 +80,18 @@ class ProductoController extends Controller
      */
     public function show($name)
     {
-
+        /**
+         * Metodo show, recibe mediante GET el nombre de un producto para buscar en la tabla PRODUCTOS
+         * con un paginado de 6 elementos, devuelve un json con el contenido de la peticion a la db
+         * y el estado de conexion http.
+         */
         try {
             $productos = DB::table('productos')->where('name', $name)->paginate(6); //Producto::all()->paginate(2);
+            return response()->json($productos,status:200);
             
         } catch (ModelNotFoundException $exception) {
             return back()->withError($exception->getMessage())->withInput();
         }
-        return response()->json($productos,status:200);
             
     }
 
@@ -90,8 +113,12 @@ class ProductoController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request)
+    public function update(ProductoRequest $request)
     {   
+        /**
+         * Metodo update, recibe parametros mediante PUT, luego actualiza el registro correspondiente al id recibido
+         * devuelve un json con el contenido actualizado de dicho registro, un mensaje sobre el resultado y el estado de la conexion http. 
+         */
         try {
         $producto = Producto::findOrFail($request->id);
         $producto->name = $request->name;
@@ -103,11 +130,16 @@ class ProductoController extends Controller
         $producto->category = $request->category;
         $producto->stock = $request->stock;
         $producto->save();
+        return response()->json([
+            'res'=>true,
+            'data'=>$producto,
+            'msg'=> 'Producto Actualizado Correctamente',
+            'status'=> 201
+        ],status:201);
     } 
         catch (ModelNotFoundException $exception) {
             return back()->withError($exception->getMessage())->withInput();
     }
-        return response()->json($producto,status:201);
     }
 
     /**
@@ -118,7 +150,21 @@ class ProductoController extends Controller
      */
     public function destroy(request $request)
     {
+        /**
+         * Metodo destroy, recibe id mediante DELETE, elimina el registro correspondiente a dicho id
+         * devuelve un json con un mensaje con el resultado de la operacion el estado de la conexion http. 
+         */
+        try {
         $producto = Producto::destroy($request->id);
-        return response()->json($productos,status:204);
+        return response()->json([
+            'res'=>true,
+            'msg'=> 'Producto Eliminado Correctamente',
+            'status'=> 204
+        ],status:204);
+        } 
+        catch (ModelNotFoundException $exception) {
+            return back()->withError($exception->getMessage())->withInput();
+    }
+
     }
 }
